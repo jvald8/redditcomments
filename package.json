@@ -13,6 +13,7 @@
     "casper": "^0.1.1",
     "cheerio": "^0.20.0",
     "dotenv": "^2.0.0",
+    "googleapis": "^12.2.0",
     "json2csv": "^3.6.2",
     "moment": "^2.14.1",
     "superagent": "^2.1.0"
