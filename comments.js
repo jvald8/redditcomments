@@ -1,5 +1,6 @@
 var request = require(`superagent`);
 var exec = require('child_process').exec;
+var database = require('./database');
 
 exports.getComments = function(redditToken) {
 	return function(postId) {
@@ -27,26 +28,35 @@ exports.getComments = function(redditToken) {
 
 								var score = JSON.parse(res.text).data.children[0].data.score;
 
-								var comment = JSON.parse(res.text).data.children[0].data.body.replace(/["']/g, "");
+								var commentText = JSON.parse(res.text).data.children[0].data.body.replace(/["']/g, "");
 
-								var cmd = `node analyze sentiment "${comment}"`;
+								var parentId = JSON.parse(res.text).data.children[0].data.parent_id;
 
-								exec(cmd, function(err, stdout, stderr) {
-									if (err) {throw err;}
+								var cmd = `node analyze sentiment "${commentText}"`;
 
-									var result = JSON.parse(stdout.split("\n").slice(1,this.length).join("\n")).documentSentiment;
+								// limit to scores over 100 for testing
 
-									var commentPolarity = result.polarity;
-									var commentMagnitude = result.magnitude;
+								if(score > 100) {
+									exec(cmd, function(err, stdout, stderr) {
+										if (err) {throw err;}
 
-									console.log(`score: ${score}`)
-									console.log(`{comment: ${comment}, sentiment: ${stdout}}`);
+										var result = JSON.parse(stdout.split("\n").slice(1,this.length).join("\n")).documentSentiment;
 
-									console.log(`commentPolarityScoreTotal: ${commentPolarity * score}`);
-									console.log(`commentMagnitudeScoreTotal: ${commentMagnitude * score}`);
+										var commentPolarity = result.polarity;
+										var commentMagnitude = result.magnitude;
 
-								})
+										var data = {comment: commentText, score: score, parentId: parentId, polarity: commentPolarity, magnitude: commentMagnitude};
 
+										if(stdout) {
+											database.storeComments(data, function(err, res) {
+												if(err) throw err;
+
+												console.log(res);
+											});
+										}
+
+									})
+								}
 
 							}
 						});

@@ -16,6 +16,7 @@
     "googleapis": "^12.2.0",
     "json2csv": "^3.6.2",
     "moment": "^2.14.1",
+    "mysql": "^2.11.1",
     "superagent": "^2.1.0"
   }
 }
