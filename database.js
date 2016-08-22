@@ -15,7 +15,18 @@ var pool = mysql.createPool({
 exports.storeComments = function(data, cb) {
 
 	pool.getConnection(function(err, connection) {
-		connection.query(`INSERT INTO comments VALUES (null, "${data.comment}", ${data.score}, "${data.parentId}", ${data.polarity}, ${data.magnitude})`, function(err, rows, fields) {
+		connection.query(`INSERT INTO comments VALUES (null, "${data.comment}", 
+															  ${data.score}, 
+															 "${data.parentId}", 
+															  ${data.polarity}, 
+															  ${data.magnitude},
+															  "${data.subredditId}",
+															  "${data.linkId}",
+															  "${data.comment_id}",
+															  "${data.author}",
+															  ${data.ups},
+															  ${data.downs},
+															  ${data.created})`, function(err, rows, fields) {
 			if (err) throw err;
 
 			console.log(`${data.comment} added to comments table`);

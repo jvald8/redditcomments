@@ -17,6 +17,8 @@
     "json2csv": "^3.6.2",
     "moment": "^2.14.1",
     "mysql": "^2.11.1",
+    "say-something": "^0.1.2",
+    "sentiment": "^2.0.0",
     "superagent": "^2.1.0"
   }
 }

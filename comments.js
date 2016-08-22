@@ -1,6 +1,8 @@
 var request = require(`superagent`);
 var exec = require('child_process').exec;
 var database = require('./database');
+var moment = require('moment');
+var sentiment = require('sentiment');
 
 exports.getComments = function(redditToken) {
 	return function(postId) {
@@ -26,38 +28,42 @@ exports.getComments = function(redditToken) {
 								console.log(err || res.err);
 							} else {
 
-								var score = JSON.parse(res.text).data.children[0].data.score;
-
-								var commentText = JSON.parse(res.text).data.children[0].data.body.replace(/["']/g, "");
-
-								var parentId = JSON.parse(res.text).data.children[0].data.parent_id;
-
-								var cmd = `node analyze sentiment "${commentText}"`;
-
-								// limit to scores over 100 for testing
+								var data = JSON.parse(res.text).data.children[0].data,
+									score = data.score,
+									commentText = data.body.replace(/["']/g, ""),
+									parentId = data.parent_id,
+									subreddit_id = data.subreddit_id,
+									link_id = data.link_id,
+									comment_id = data.id,
+									author = data.author,
+									ups = data.ups,
+									downs = data.downs,
+									created = data.created;
 
 								if(score > 100) {
-									exec(cmd, function(err, stdout, stderr) {
-										if (err) {throw err;}
+									var commentPolarity = sentiment(commentText).score;
 
-										var result = JSON.parse(stdout.split("\n").slice(1,this.length).join("\n")).documentSentiment;
+									var commentMagnitude = sentiment(commentText).comparative;
 
-										var commentPolarity = result.polarity;
-										var commentMagnitude = result.magnitude;
+									var data = {comment: commentText,
+												score: score,
+												parentId: parentId, 
+												polarity: commentPolarity, 
+												magnitude: commentMagnitude,
+												subredditId: subreddit_id,
+												linkId: link_id,
+												comment_id: comment_id,
+												author: author,
+												ups: ups,
+												downs: downs,
+												created: created};
 
-										var data = {comment: commentText, score: score, parentId: parentId, polarity: commentPolarity, magnitude: commentMagnitude};
+									database.storeComments(data, function(err, res) {
+										if (err) throw err;
 
-										if(stdout) {
-											database.storeComments(data, function(err, res) {
-												if(err) throw err;
-
-												console.log(res);
-											});
-										}
-
+										console.log(res);
 									})
 								}
-
 							}
 						});
 					}}(i), i * 1000);
