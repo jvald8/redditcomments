@@ -61,7 +61,7 @@ exports.getComments = function(redditToken) {
 									database.storeComments(data, function(err, res) {
 										if (err) throw err;
 
-										console.log(res);
+										res.end();
 									})
 								}
 							}

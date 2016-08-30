@@ -26,7 +26,7 @@ exports.storeComments = function(data, cb) {
 															  "${data.author}",
 															  ${data.ups},
 															  ${data.downs},
-															  ${data.created})`, function(err, rows, fields) {
+															  "${data.created}")`, function(err, rows, fields) {
 			if (err) throw err;
 
 			console.log(`${data.comment} added to comments table`);
